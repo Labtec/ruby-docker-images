@@ -7,13 +7,13 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.ruby_version }}-${{ matrix.ubuntu_version }} ${{ matrix.arch }}
+    name: ${{ matrix.ruby_version }}-${{ matrix.freebsd_version }} ${{ matrix.arch }}
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       matrix:
-        ubuntu_version:
-          - noble
-          - jammy
+        freebsd_version:
+          - "15.0"
+          - "14.2"
         ruby_version:
           - 3.2.8
           - 3.3.7
@@ -28,9 +28,9 @@ jobs:
 
       - name: Build image
         run: |
-          rake docker:build arch=${{ matrix.arch }} ruby_version=${{ matrix.ruby_version }} ubuntu_version=${{ matrix.ubuntu_version }}
+          rake docker:build arch=${{ matrix.arch }} ruby_version=${{ matrix.ruby_version }} freebsd_version=${{ matrix.freebsd_version }}
 
       - name: Check image
         run: |
           docker images
-          docker run rubylang/ruby:${{ matrix.ruby_version }}-${{ matrix.ubuntu_version }} ruby -v
+          docker run ghcr.io/labtec/ruby:${{ matrix.ruby_version }}-${{ matrix.freebsd_version }} ruby -v
