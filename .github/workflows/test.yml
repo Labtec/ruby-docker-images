@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         freebsd_version:
-          - "15.0"
+          # - "15.0"
           - "14.3"
         ruby_version:
           - 3.2.8
@@ -27,8 +27,21 @@ jobs:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Build image
-        run: |
-          rake docker:build arch=${{ matrix.arch }} ruby_version=${{ matrix.ruby_version }} freebsd_version=${{ matrix.freebsd_version }}
+        uses: cross-platform-actions/action@v0.29.0
+        with:
+          operating_system: freebsd
+          version: ${{ matrix.freebsd_version }}
+          run: |
+            sudo pkg install -y podman ruby
+            alias docker=podman
+            sudo cp /usr/local/etc/containers/pf.conf.sample /etc/pf.conf
+            sudo sed -i "" "s/ix0/vtnet0/g"
+            sudo service pf enable
+            sudo service pf start
+            sudo service podman enable
+            sudo service podman start
+            sudo mount -t fdescfs fdesc /dev/fd
+            rake docker:build arch=${{ matrix.arch }} ruby_version=${{ matrix.ruby_version }} freebsd_version=${{ matrix.freebsd_version }}
 
       - name: Check image
         run: |
